@@ -184,7 +184,7 @@ public class Transaction extends ChildMessage implements Serializable {
         // We don't initialize appearsIn deliberately as it's only useful for transactions stored in the wallet.
         length = 8; // 8 for std fields
         Networks.Family txFamily = Networks.getFamily(params);
-        if (txFamily == PEERCOIN || txFamily == NUBITS || (txFamily == REDDCOIN && version > 1) || txFamily == VPNCOIN || txFamily == CLAMS) {
+        if (txFamily == PEERCOIN || txFamily == NUBITS || (txFamily == REDDCOIN && version > 1) || txFamily == VPNCOIN || txFamily == CLAMS || (txFamily == SOLARCOIN && version > 3)) {
             txTime = new Date().getTime() / 1000; // time is in seconds
             length += 4;
         }
@@ -531,7 +531,7 @@ public class Transaction extends ChildMessage implements Serializable {
         // jump past version (uint32)
         int cursor = offset + 4;
 
-        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS))
+        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3))
             cursor += 4; // time (uint32)
 
         int i;
@@ -589,7 +589,7 @@ public class Transaction extends ChildMessage implements Serializable {
         version = readUint32();
         optimalEncodingMessageSize = 4;
 
-        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS)) {
+        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3)) {
             txTime = readUint32();
             optimalEncodingMessageSize = +4;
         }
@@ -1112,7 +1112,7 @@ public class Transaction extends ChildMessage implements Serializable {
 
     protected void bitcoinSerializeToStream(OutputStream stream, boolean includeExtensions) throws IOException {
         uint32ToByteStreamLE(version, stream);
-        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS) && includeExtensions)
+        if (includeExtensions && (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3)))
             uint32ToByteStreamLE(txTime, stream);
         stream.write(new VarInt(inputs.size()).encode());
         for (TransactionInput in : inputs)
