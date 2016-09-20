@@ -38,7 +38,8 @@ public class Networks {
         NUBITS,
         VPNCOIN,
         CLAMS,
-        SOLARCOIN
+        SOLARCOIN,
+        GRIDCOIN
     }
 
     private static final Pattern bitcoinFamily = Pattern.compile(".*(bitcoin).*");
@@ -48,6 +49,7 @@ public class Networks {
     private static final Pattern vpncoinFamily = Pattern.compile(".*(vpncoin).*");
     private static final Pattern clamsFamily = Pattern.compile(".*(clams).*");
     private static final Pattern solarcoinFamily = Pattern.compile(".*(solarcoin).*");
+    private static final Pattern gridcoinFamily = Pattern.compile(".*(gridcoin).*");
 
     /** Registered networks */
     private static Set<NetworkParameters> networks = ImmutableSet.of(TestNet3Params.get(), MainNetParams.get());
@@ -79,33 +81,12 @@ public class Networks {
         }
     }
 
-    public static boolean isFamily(NetworkParameters network, Family family) {
-        return getFamily(network) == family;
-    }
-
-    public static boolean isFamily(NetworkParameters network, Family family1, Family family2) {
+    public static boolean isFamily(NetworkParameters network, Family... family) {
         Family networkFamily = getFamily(network);
-        return networkFamily == family1 || networkFamily == family2;
-    }
-
-    public static boolean isFamily(NetworkParameters network, Family family1, Family family2, Family family3) {
-        Family networkFamily = getFamily(network);
-        return networkFamily == family1 || networkFamily == family2 || networkFamily == family3;
-    }
-
-    public static boolean isFamily(NetworkParameters network, Family family1, Family family2, Family family3, Family family4) {
-        Family networkFamily = getFamily(network);
-        return networkFamily == family1 || networkFamily == family2 || networkFamily == family3 || networkFamily == family4;
-    }
-
-    public static boolean isFamily(NetworkParameters network, Family family1, Family family2, Family family3, Family family4, Family family5) {
-        Family networkFamily = getFamily(network);
-        return networkFamily == family1 || networkFamily == family2 || networkFamily == family3 || networkFamily == family4 || networkFamily == family5;
-    }
-
-    public static boolean isFamily(NetworkParameters network, Family family1, Family family2, Family family3, Family family4, Family family5, Family family6) {
-        Family networkFamily = getFamily(network);
-        return networkFamily == family1 || networkFamily == family2 || networkFamily == family3 || networkFamily == family4 || networkFamily == family5 || networkFamily == family6;
+        for (Family f : family) {
+            if (networkFamily == f) return true;
+        }
+        return false;
     }
 
     public static Family getFamily(NetworkParameters network) {
@@ -125,6 +106,8 @@ public class Networks {
             return Family.VPNCOIN;
         } else if (clamsFamily.matcher(network.getFamilyString()).matches()) {
             return Family.CLAMS;
+        } else if (gridcoinFamily.matcher(network.getFamilyString()).matches()) {
+            return Family.GRIDCOIN;
         } else if (solarcoinFamily.matcher(network.getFamilyString()).matches()) {
             return Family.SOLARCOIN;
         } else {

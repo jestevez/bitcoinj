@@ -184,14 +184,14 @@ public class Transaction extends ChildMessage implements Serializable {
         // We don't initialize appearsIn deliberately as it's only useful for transactions stored in the wallet.
         length = 8; // 8 for std fields
         Networks.Family txFamily = Networks.getFamily(params);
-        if (txFamily == PEERCOIN || txFamily == NUBITS || (txFamily == REDDCOIN && version > 1) || txFamily == VPNCOIN || txFamily == CLAMS || (txFamily == SOLARCOIN && version > 3)) {
+        if (txFamily == PEERCOIN || txFamily == NUBITS || (txFamily == REDDCOIN && version > 1) || txFamily == VPNCOIN || txFamily == CLAMS || txFamily == GRIDCOIN || (txFamily == SOLARCOIN && version > 3)) {
             txTime = new Date().getTime() / 1000; // time is in seconds
             length += 4;
         }
         if (txFamily == NUBITS) {
             txTokenId = params.getTokenId();
         }
-        if (txFamily == VPNCOIN || ((txFamily == CLAMS || txFamily == SOLARCOIN) && version > 1)) {
+        if (txFamily == VPNCOIN || txFamily == GRIDCOIN || ((txFamily == CLAMS || txFamily == SOLARCOIN) && version > 1)) {
             extraBytes = new byte[0];
         }
     }
@@ -531,7 +531,7 @@ public class Transaction extends ChildMessage implements Serializable {
         // jump past version (uint32)
         int cursor = offset + 4;
 
-        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3))
+        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS, GRIDCOIN) || (isFamily(params, SOLARCOIN) && version > 3))
             cursor += 4; // time (uint32)
 
         int i;
@@ -570,7 +570,7 @@ public class Transaction extends ChildMessage implements Serializable {
         if (isFamily(params, NUBITS))
             cursor += 1; // token id
 
-        if (isFamily(params, VPNCOIN) || (isFamily(params, CLAMS, SOLARCOIN) && version > 1)) {
+        if (isFamily(params, VPNCOIN, GRIDCOIN) || (isFamily(params, CLAMS, SOLARCOIN) && version > 1)) {
             varint = new VarInt(buf, cursor);
             cursor += varint.value + varint.getOriginalSizeInBytes();
         }
@@ -589,7 +589,7 @@ public class Transaction extends ChildMessage implements Serializable {
         version = readUint32();
         optimalEncodingMessageSize = 4;
 
-        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3)) {
+        if (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, GRIDCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3)) {
             txTime = readUint32();
             optimalEncodingMessageSize = +4;
         }
@@ -629,7 +629,7 @@ public class Transaction extends ChildMessage implements Serializable {
             optimalEncodingMessageSize++;
         }
 
-        if (isFamily(params, VPNCOIN) || (isFamily(params, CLAMS, SOLARCOIN) && version > 1)) {
+        if (isFamily(params, VPNCOIN, GRIDCOIN) || (isFamily(params, CLAMS, SOLARCOIN) && version > 1)) {
             int extraBytesLength = (int) readVarInt();
             extraBytes = readBytes(extraBytesLength);
             optimalEncodingMessageSize += VarInt.sizeOf(extraBytesLength) + extraBytesLength;
@@ -660,7 +660,7 @@ public class Transaction extends ChildMessage implements Serializable {
     }
 
     public boolean isCoinStake() {
-        if (isFamily(params, PEERCOIN, NUBITS, REDDCOIN, VPNCOIN, CLAMS, SOLARCOIN)) {
+        if (isFamily(params, PEERCOIN, NUBITS, REDDCOIN, VPNCOIN, GRIDCOIN, CLAMS, SOLARCOIN)) {
             maybeParse();
             return inputs.size() > 0 && (!inputs.get(0).isCoinBase()) && outputs.size() >= 2 && outputs.get(0).isNull();
         } else {
@@ -1112,7 +1112,7 @@ public class Transaction extends ChildMessage implements Serializable {
 
     protected void bitcoinSerializeToStream(OutputStream stream, boolean includeExtensions) throws IOException {
         uint32ToByteStreamLE(version, stream);
-        if (includeExtensions && (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3)))
+        if (includeExtensions && (isFamily(params, PEERCOIN, NUBITS, VPNCOIN, GRIDCOIN, CLAMS) || (isFamily(params, SOLARCOIN) && version > 3)))
             uint32ToByteStreamLE(txTime, stream);
         stream.write(new VarInt(inputs.size()).encode());
         for (TransactionInput in : inputs)
@@ -1125,7 +1125,7 @@ public class Transaction extends ChildMessage implements Serializable {
             uint32ToByteStreamLE(txTime, stream);
         if (isFamily(params, NUBITS) && includeExtensions)
             stream.write(txTokenId);
-        if ((isFamily(params, VPNCOIN) || (isFamily(params, CLAMS, SOLARCOIN) && version > 1)) && includeExtensions) {
+        if ((isFamily(params, VPNCOIN, GRIDCOIN) || (isFamily(params, CLAMS, SOLARCOIN) && version > 1)) && includeExtensions) {
             if (extraBytes == null || extraBytes.length == 0)
                 stream.write(new VarInt(0).encode());
             else {
