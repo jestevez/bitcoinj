@@ -1,0 +1,82 @@
+.mnemonic-area *.text {
+    -fx-text-alignment: center;
+}
+
+.title-banner {
+    -fx-background-color: #C49C1D;
+}
+
+.title-label {
+    -fx-background-color: #C49C1D;
+    -fx-text-fill: white;
+}
+
+.root-pane {
+    -fx-background-color: white;
+}
+
+.info-bar {
+    -fx-background-color: linear-gradient(to bottom, black, darkslategray);
+    -fx-padding: 10;
+}
+.info-bar > Label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.info-bar > .progress-bar > .bar {
+    -fx-padding: 8;
+}
+.info-bar > .progress-bar > .track {
+    -fx-opacity: 0.0;
+}
+
+.fat-button {
+    -fx-padding: 10 15 10 15;
+    -fx-min-width: 100;
+    -fx-base: whitesmoke;
+}
+
+.fat-button:default {
+    -fx-base: orange;
+    -fx-text-fill: white;
+}
+
+.fat-button:cancel {
+    -fx-background-color: lightgray, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 3;
+    -fx-text-fill: black;
+}
+
+.fat-button:cancel:hover {
+    -fx-base: white;
+    -fx-background-insets: -1, 0, 1, 2;
+    -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+    -fx-background-radius: 3;
+    -fx-text-fill: black;
+}
+.table-cell {
+    -fx-text-fill: black;
+    -fx-font-size: 12px;
+}
+
+.hyperlink {
+    -fx-text-fill: black;
+    -fx-font-size: 12px;
+}
+
+#menu-bar {
+    -fx-padding: 0 ;
+    -fx-background-color: transparent ;
+    -fx-background-insets: 0 ;
+    -fx-background-radius: 0 ;
+}
+
+#menu-bar-container {
+    -fx-padding: 0.0em 0.666667em 0.0em 0.666667em; /* 0 8 0 8 */
+    -fx-background-color:
+        linear-gradient(to bottom, derive(-fx-base,75%) 0%, -fx-outer-border 90%),
+        linear-gradient(to bottom, derive(-fx-base,46.9%) 2%, derive(-fx-base,-2.1%) 95%);
+    -fx-background-insets: 0 0 0 0, 1 0 1 0;
+    -fx-background-radius: 0, 0 ;
+}

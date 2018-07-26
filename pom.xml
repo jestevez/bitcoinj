@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.bitcoinj</groupId>
-  <artifactId>bitcoinj-parent</artifactId>
-  <version>0.14.7.1-onixcoin</version>
+  <artifactId>onixcoinj-parent</artifactId>
+  <version>0.14.7.2</version>
   <packaging>pom</packaging>
 
   <modules>
@@ -26,7 +26,7 @@
     <url>scm:git:https://github.com/bitcoinj/bitcoinj</url>
   </scm>
 
-  <name>bitcoinj Parent</name>
+  <name>onixcoinj Parent</name>
   <description>Provides the common configuration for the BitCoinJ modules</description>
   <url>http://www.bitcoinj.org/</url>
 
