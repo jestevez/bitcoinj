@@ -22,9 +22,11 @@
     <parent>
         <groupId>org.bitcoinj</groupId>
         <artifactId>bitcoinj-parent</artifactId>
-        <version>0.14.7</version>
+        <version>0.14.7.onixcoin</version>
     </parent>
-
+    <properties>
+       <skipTests>true</skipTests>
+    </properties>
     <artifactId>bitcoinj-core</artifactId>
 
     <name>bitcoinj</name>
@@ -186,9 +188,9 @@
                                         <urn>com.fasterxml.jackson.core:jackson-annotations:2.5.0:jar:null:test:a2a55a3375bc1cef830ca426d68d2ea22961190e</urn>
                                         <urn>com.fasterxml.jackson.core:jackson-core:2.5.1:jar:null:test:e2a00ad1d7e540ec395e9296a34da484c8888d4d</urn>
                                         <urn>com.fasterxml.jackson.core:jackson-databind:2.5.2:jar:null:test:2b4dd13fbe6f8c6b146d4c3b7fd70862f136802d</urn>
-                                        <urn>com.google.code.findbugs:jsr305:2.0.1:jar:null:compile:516c03b21d50a644d538de0f0369c620989cd8f0</urn>
+                                        <urn>com.google.code.findbugs:jsr305:3.0.1:jar:null:compile:f7be08ec23c21485b9b5a1cf1654c2ec8c58168d</urn>
                                         <urn>com.google.guava:guava:18.0:jar:null:compile:cce0823396aa693798f8882e64213b1772032b09</urn>
-                                        <urn>com.google.protobuf:protobuf-java:2.6.1:jar:null:compile:d9521f2aecb909835746b7a5facf612af5e890e8</urn>
+                                        <urn>com.google.protobuf:protobuf-java:3.2.0:jar:null:compile:62ccf171a106ff6791507f2d5364c275f9a3131d</urn>
                                         <urn>com.h2database:h2:1.3.167:jar:null:compile:d3867d586f087e53eb12fc65e5693d8ee9a5da17</urn>
                                         <urn>com.lambdaworks:scrypt:1.4.0:jar:null:compile:906506b74f30c8c20bccd9ed4a11112d8941fe87</urn>
                                         <urn>com.madgag.spongycastle:core:1.51.0.0:jar:null:compile:0f642963312ea0e615ad65f28adc5a5b3a2a0862</urn>
@@ -215,8 +217,8 @@
                                         <urn>org.objenesis:objenesis:1.2:jar:null:test:bfcb0539a071a4c5a30690388903ac48c0667f2a</urn>
                                         <urn>com.squareup.okhttp:okhttp:2.7.2:jar:null:runtime:20f6463eb19ac61960c5d91a094c2f4f0727dc2e</urn>
                                         <urn>com.squareup.okio:okio:1.6.0:jar:null:runtime:98476622f10715998eacf9240d6b479f12c66143</urn>
-                                        <urn>org.slf4j:slf4j-api:1.7.20:jar:null:compile:867d63093eff0a0cb527bf13d397d850af3dcae3</urn>
-                                        <urn>org.slf4j:slf4j-jdk14:1.7.20:jar:null:test:b568c92eec50edc922c52b3e759982579170c2be</urn>
+                                        <urn>org.slf4j:slf4j-api:1.7.22:jar:null:compile:a1c83373863cec7ae8d89dc1c5722d8cb6ec0309</urn>
+                                        <urn>org.slf4j:slf4j-jdk14:1.7.22:jar:null:test:9589f32b2bdbefa93e6dbe6d8772600ee5e68e8b</urn>
                                         <urn>org.sonatype.plugins:nexus-staging-maven-plugin:1.6.5:maven-plugin:null:runtime:455ca2aa8cd14a06608f1538bd6a1efd09561563</urn>
                                         <urn>postgresql:postgresql:9.1-901.jdbc4:jar:null:compile:153f2f92a786f12fc111d0111f709012df87c808</urn>
                                         <!-- A check for the rules themselves -->
@@ -362,7 +364,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.20</version>
+            <version>1.7.22</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -385,7 +387,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>2.6.1</version>
+            <version>3.2.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -395,7 +397,7 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>2.0.1</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>net.jcip</groupId>
@@ -433,6 +435,20 @@
             <groupId>org.bitcoinj</groupId>
             <artifactId>orchid</artifactId>
             <version>1.2.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>jsr305</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp</groupId>

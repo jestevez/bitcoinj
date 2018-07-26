@@ -20,20 +20,39 @@ import org.bitcoinj.core.ECKey;
 import org.bitcoinj.crypto.BIP38PrivateKey.BadPassphraseException;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
 
 public class BIP38PrivateKeyTest {
 
     private static final MainNetParams MAINNET = MainNetParams.get();
     private static final TestNet3Params TESTNET = TestNet3Params.get();
+
+    @Before
+    public void setUnlimitedCipherInJDK8() {
+        // hack for JCE Unlimited Strength for jdk8 does not require to copy jce_policy-8.zip in $JAVA_HOME/jre/lib/security/
+        try {
+            Field field = Class.forName("javax.crypto.JceSecurity").getDeclaredField("isRestricted");
+            field.setAccessible(true);
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            field.set(null, false);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+    }
 
     @Test
     public void bip38testvector_noCompression_noEcMultiply_test1() throws Exception {

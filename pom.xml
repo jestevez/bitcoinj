@@ -4,7 +4,7 @@
 
   <groupId>org.bitcoinj</groupId>
   <artifactId>bitcoinj-parent</artifactId>
-  <version>0.14.7</version>
+  <version>0.14.7.onixcoin</version>
   <packaging>pom</packaging>
 
   <modules>
@@ -171,7 +171,7 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.20</version>
+          <version>1.7.22</version>
       </dependency>
       <!-- bitcoinj consumers are expected to provide their own SLF4J adapters
     such as logback, slf4j-log4j12, slf4j-jcl and so on
@@ -179,7 +179,7 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
-        <version>1.7.20</version>
+          <version>1.7.22</version>
         <scope>runtime</scope>
         <optional>true</optional>
       </dependency>
@@ -212,6 +212,16 @@
         </plugins>
       </build>
     </profile>
+
+      <profile>
+          <id>use-strong-cipher-jdk9</id>
+          <activation>
+              <jdk>[1.9,)</jdk>
+          </activation>
+          <properties>
+                  <crypto.policy>unlimited</crypto.policy>
+          </properties>
+      </profile>
 
       <profile>
           <id>release</id>

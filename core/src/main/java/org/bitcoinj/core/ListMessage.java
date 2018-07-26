@@ -17,6 +17,9 @@
 
 package org.bitcoinj.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ import java.util.List;
  */
 public abstract class ListMessage extends Message {
 
+    private static final Logger log = LoggerFactory.getLogger(PeerGroup.class);
     private long arrayLen;
     // For some reason the compiler complains if this is inside InventoryItem
     protected List<InventoryItem> items;
@@ -99,7 +103,13 @@ public abstract class ListMessage extends Message {
                     type = InventoryItem.Type.FilteredBlock;
                     break;
                 default:
-                    throw new ProtocolException("Unknown CInv type: " + typeCode);
+                    //
+                    // Allow other inventory types for some coins.
+                    //
+                    if (!params.allowMoreInventoryTypes())
+                        throw new ProtocolException("Unknown CInv type: " + typeCode);
+                    //log.info("Unknown CInv type: " + typeCode);
+                    continue;
             }
             InventoryItem item = new InventoryItem(type, readHash());
             items.add(item);

@@ -85,6 +85,13 @@ public class KeyChainGroup implements KeyBag {
     }
 
     /**
+     * Creates a keychain group with the given chain.
+     */
+    public KeyChainGroup(NetworkParameters params, DeterministicKeyChain chain) {
+        this(params, null, ImmutableList.of(chain), null, null);
+    }
+
+    /**
      * Creates a keychain group with no basic chain, and an HD chain that is watching the given watching key.
      * This HAS to be an account key as returned by {@link DeterministicKeyChain#getWatchingKey()}.
      */
@@ -786,6 +793,19 @@ public class KeyChainGroup implements KeyBag {
         }
     }
 
+    public String printAllPubKeysAsHex() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (basic != null) {
+            List<ECKey> keys = basic.getKeys();
+            Collections.sort(keys, ECKey.AGE_COMPARATOR);
+            for (ECKey key : keys)
+                stringBuilder.append('"').append(Utils.HEX.encode(key.getPubKey())).append('"').append(",\n");
+        }
+        for (DeterministicKeyChain chain : chains)
+            chain.printAllPubKeysAsHex(stringBuilder);
+        return stringBuilder.toString();
+    }
+    
     public String toString(boolean includePrivateKeys) {
         final StringBuilder builder = new StringBuilder();
         if (basic != null) {

@@ -16,19 +16,21 @@
 
 package org.bitcoinj.core;
 
-import com.google.common.annotations.*;
-import com.google.common.base.*;
-import com.google.common.util.concurrent.*;
-import org.bitcoinj.utils.*;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import org.bitcoinj.core.listeners.PreMessageReceivedEventListener;
+import org.bitcoinj.utils.Threading;
 import org.bitcoinj.wallet.Wallet;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.annotation.*;
+import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
 
 import static com.google.common.base.Preconditions.checkState;
-import org.bitcoinj.core.listeners.PreMessageReceivedEventListener;
 
 /**
  * Represents a single transaction broadcast that we are performing. A broadcast occurs after a new transaction is created
@@ -46,10 +48,16 @@ public class TransactionBroadcast {
     private int minConnections;
     private int numWaitingFor;
 
+    private boolean broadcastToAllPeers;
+
+    public void setBroadcastToAllPeers(boolean broadcastToAllPeers) {
+        this.broadcastToAllPeers = broadcastToAllPeers;
+    }
+
     /** Used for shuffling the peers before broadcast: unit tests can replace this to make themselves deterministic. */
     @VisibleForTesting
     public static Random random = new Random();
-    
+
     // Tracks which nodes sent us a reject message about this broadcast, if any. Useful for debugging.
     private Map<Peer, RejectMessage> rejects = Collections.synchronizedMap(new HashMap<Peer, RejectMessage>());
 
@@ -148,10 +156,16 @@ public class TransactionBroadcast {
             // our version message, as SPV nodes cannot relay it doesn't give away any additional information
             // to skip the inv here - we wouldn't send invs anyway.
             int numConnected = peers.size();
-            int numToBroadcastTo = (int) Math.max(1, Math.round(Math.ceil(peers.size() / 2.0)));
-            numWaitingFor = (int) Math.ceil((peers.size() - numToBroadcastTo) / 2.0);
+
+            // We add the option ot broadcast to all peer but don't change the algorithm for how many nodes we want to hear back
+            int numToBroadcastTo = broadcastToAllPeers ? peers.size(): (int) Math.max(1, Math.round(Math.ceil(peers.size() / 2.0)));
+            if(!broadcastToAllPeers)
+                peers = peers.subList(0, numToBroadcastTo);
+
+            numWaitingFor = Math.min(1, (int) Math.floor(peers.size() / 4.0));
             Collections.shuffle(peers, random);
-            peers = peers.subList(0, numToBroadcastTo);
+
+
             log.info("broadcastTransaction: We have {} peers, adding {} to the memory pool", numConnected, tx.getHashAsString());
             log.info("Sending to {} peers, will wait for {}, sending to: {}", numToBroadcastTo, numWaitingFor, Joiner.on(",").join(peers));
             for (Peer peer : peers) {

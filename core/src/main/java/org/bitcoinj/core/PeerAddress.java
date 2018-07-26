@@ -17,9 +17,12 @@
 
 package org.bitcoinj.core;
 
-import org.bitcoinj.params.MainNetParams;
-import com.google.common.base.Objects;
 import com.google.common.net.InetAddresses;
+import org.bitcoinj.net.AddressChecker;
+import org.bitcoinj.net.OnionCat;
+import org.bitcoinj.params.MainNetParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,9 +31,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.bitcoinj.core.Utils.uint32ToByteStreamLE;
 import static org.bitcoinj.core.Utils.uint64ToByteStreamLE;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>A PeerAddress holds an IP address and port number representing the network location of
@@ -39,7 +42,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p>Instances of this class are not safe for use by multiple threads.</p>
  */
 public class PeerAddress extends ChildMessage {
-
+    private static final Logger log = LoggerFactory.getLogger(PeerAddress.class);
+    
     static final int MESSAGE_SIZE = 30;
 
     private InetAddress addr;
@@ -117,7 +121,26 @@ public class PeerAddress extends ChildMessage {
      * for Bitcoin.
      */
     public PeerAddress(InetSocketAddress addr) {
-        this(addr.getAddress(), addr.getPort(), NetworkParameters.ProtocolVersion.CURRENT.getBitcoinProtocolVersion());
+        /* socks addresses, eg Tor, use hostname only because no local lookup is performed.
+         * includes .onion hidden services.
+         */
+        String host = addr.getHostString();
+        if( host != null && host.endsWith(".onion") ) {
+            this.hostname = host;
+            try {
+                this.addr = OnionCat.onionHostToInetAddress(this.hostname);
+            }
+            catch (UnknownHostException e) {
+                log.warn( "Invalid format for onion address: {}", this.hostname );
+            }
+        }
+        else {
+            this.addr = checkNotNull(addr.getAddress());
+        }
+        this.port = addr.getPort();
+        this.protocolVersion = NetworkParameters.ProtocolVersion.CURRENT.getBitcoinProtocolVersion();
+        this.services = BigInteger.ZERO;
+        length = protocolVersion > 31402 ? MESSAGE_SIZE : MESSAGE_SIZE - 4;
     }
 
     /**
@@ -164,14 +187,28 @@ public class PeerAddress extends ChildMessage {
             uint32ToByteStreamLE(secs, stream);
         }
         uint64ToByteStreamLE(services, stream);  // nServices.
-        // Java does not provide any utility to map an IPv4 address into IPv6 space, so we have to do it by hand.
-        byte[] ipBytes = addr.getAddress();
-        if (ipBytes.length == 4) {
-            byte[] v6addr = new byte[16];
-            System.arraycopy(ipBytes, 0, v6addr, 12, 4);
-            v6addr[10] = (byte) 0xFF;
-            v6addr[11] = (byte) 0xFF;
-            ipBytes = v6addr;
+
+        AddressChecker addrChecker = new AddressChecker();
+        byte[] ipBytes;
+        if( addrChecker.IsOnionCatTor( addr ) ) {
+            ipBytes = OnionCat.onionHostToIPV6Bytes(hostname);
+        }
+        else if( addr != null ) {
+            // Java does not provide any utility to map an IPv4 address into IPv6 space, so we have to do it by hand.
+            ipBytes = addr.getAddress();
+            if (ipBytes.length == 4) {
+                byte[] v6addr = new byte[16];
+                System.arraycopy(ipBytes, 0, v6addr, 12, 4);
+                v6addr[10] = (byte) 0xFF;
+                v6addr[11] = (byte) 0xFF;
+                ipBytes = v6addr;
+            }
+            else {
+                ipBytes = new byte[16];
+            }
+        }
+        else {
+            ipBytes = new byte[16];  // zero-filled.
         }
         stream.write(ipBytes);
         // And write out the port. Unlike the rest of the protocol, address and port is in big endian byte order.
@@ -192,8 +229,13 @@ public class PeerAddress extends ChildMessage {
             time = -1;
         services = readUint64();
         byte[] addrBytes = readBytes(16);
+        AddressChecker addrChecker = new AddressChecker();
         try {
             addr = InetAddress.getByAddress(addrBytes);
+            
+            if( addrChecker.IsOnionCatTor( addr )) {
+                hostname = OnionCat.IPV6BytesToOnionHost( addr.getAddress() );
+            }
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);  // Cannot happen.
         }
@@ -251,23 +293,37 @@ public class PeerAddress extends ChildMessage {
         if (hostname != null) {
             return "[" + hostname + "]:" + port;
         }
-        return "[" + addr.getHostAddress() + "]:" + port;
+        if(addr != null ) {
+            return "[" + addr.getHostAddress() + "]:" + port;
+        }
+        return "[]";
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PeerAddress other = (PeerAddress) o;
-        return other.addr.equals(addr) && other.port == port && other.time == time && other.services.equals(services);
-        //TODO: including services and time could cause same peer to be added multiple times in collections
+
+        PeerAddress that = (PeerAddress) o;
+
+        if (port != that.port) return false;
+        if (time != that.time) return false;
+        if (addr != null ? !addr.equals(that.addr) : that.addr != null) return false;
+        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) return false;
+        return !(services != null ? !services.equals(that.services) : that.services != null);
+
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(addr, port, time, services);
+        int result = addr != null ? addr.hashCode() : 0;
+        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
+        result = 31 * result + port;
+        result = 31 * result + (services != null ? services.hashCode() : 0);
+        result = 31 * result + (int) (time ^ (time >>> 32));
+        return result;
     }
-    
+
     public InetSocketAddress toSocketAddress() {
         // Reconstruct the InetSocketAddress properly
         if (hostname != null) {

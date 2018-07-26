@@ -78,6 +78,7 @@ public class SPVBlockStore implements BlockStore {
     // Used to stop other applications/processes from opening the store.
     protected FileLock fileLock = null;
     protected RandomAccessFile randomAccessFile = null;
+    private final String fileAbsolutePath;
 
     /**
      * Creates and initializes an SPV block store. Will create the given file if it's missing. This operation
@@ -85,6 +86,7 @@ public class SPVBlockStore implements BlockStore {
      */
     public SPVBlockStore(NetworkParameters params, File file) throws BlockStoreException {
         checkNotNull(file);
+        fileAbsolutePath = file.getAbsolutePath();
         this.params = checkNotNull(params);
         try {
             this.numHeaders = DEFAULT_NUM_HEADERS;
@@ -236,8 +238,9 @@ public class SPVBlockStore implements BlockStore {
                 buffer.get(headHash);
                 Sha256Hash hash = Sha256Hash.wrap(headHash);
                 StoredBlock block = get(hash);
-                if (block == null)
-                    throw new BlockStoreException("Corrupted block store: could not find chain head: " + hash);
+                if (block == null) 
+                    throw new BlockStoreException("Corrupted block store: could not find chain head: " + hash 
+                                                          +"\nFile path: "+ fileAbsolutePath);
                 lastChainHead = block;
             }
             return lastChainHead;

@@ -539,4 +539,7 @@ public abstract class NetworkParameters {
             return bitcoinProtocol;
         }
     }
+
+    public boolean allowMoreInventoryTypes() { return false; }
+    public boolean allowMoreMessages() { return false;}
 }
