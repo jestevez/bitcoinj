@@ -39,7 +39,6 @@ import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.store.MemoryBlockStore;
 import org.bitcoinj.utils.Threading;
 import org.libdohj.core.AltcoinSerializer;
-import org.onixcoinj.core.CoinDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -53,15 +52,15 @@ import org.spongycastle.util.encoders.Hex;
 public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
     private static final Logger log = LoggerFactory.getLogger(OnixcoinMainNetParams.class);
     protected final ReentrantLock lock = Threading.lock("blockchain");
-    
+    public static BigInteger proofOfWorkLimit = org.bitcoinj.core.Utils.decodeCompactBits(0x1e0fffffL);  //main.cpp
     
     /** Keeps a map of block hashes to StoredBlocks. */
     private final BlockStore blockStore;
     
-    public static final int MAINNET_MAJORITY_WINDOW = MainNetParams.MAINNET_MAJORITY_WINDOW;
-    public static final int MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED = MainNetParams.MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
-    public static final int MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE = MainNetParams.MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
-
+    public static final int MAINNET_MAJORITY_WINDOW = 1000;
+    public static final int MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED = 950;
+    public static final int MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE = 750;
+    
     public OnixcoinMainNetParams() {
         super();
         
@@ -78,7 +77,13 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
         acceptableAddressCodes = new int[]{addressHeader, p2shHeader};
         dumpedPrivateKeyHeader = 128;  //common to all coins
 
-        this.genesisBlock = createGenesis(this);
+        
+        genesisBlock = createGenesis(this);
+        // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L2795
+        genesisBlock.setTime(1491940886L);
+        genesisBlock.setDifficultyTarget(0x1e0ffff0L);
+        genesisBlock.setNonce(1033603);
+        
         spendableCoinbaseDepth = 100;
         subsidyDecreaseBlockCount = 840000;
 
@@ -96,7 +101,8 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
             "seed5.cryptolife.net",
             "seed2.cryptolife.net",
             "seed3.cryptolife.net",
-            "electrum6.cryptolife.net"
+            "electrum6.cryptolife.net",
+            "dnsseed.onixcoin.info"
         };
         
         bip32HeaderPub = 0x049d7cb2;
@@ -118,26 +124,24 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
     //CTxOut(nValue=1.00000000, scriptPubKey=04678afdb0fe5548271967f1a67130)
     //vMerkleTree: 64e1822ed56cd7068d031fb3a4758e79c19e3386c654066ee0a16791ab807bea 
     
-    private static AltcoinBlock createGenesis(NetworkParameters params) {
+    private static AltcoinBlock createGenesis(AbstractOnixcoinParams params) {
         AltcoinBlock genesisBlock = new AltcoinBlock(params, Block.BLOCK_VERSION_GENESIS);
         Transaction t = new Transaction(params);
         try {
             // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L2783
-            byte[] bytes = Hex.decode("04ffff001d0104126f6e69782067656e6573697320626c6f636b");
+            byte[] bytes = Utils.HEX.decode("04ffff001d0104126f6e69782067656e6573697320626c6f636b");
             t.addInput(new TransactionInput(params, t, bytes));
             ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
             // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L2789
-            Script.writeBytes(scriptPubKeyBytes, Hex.decode("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"));
+            Script.writeBytes(scriptPubKeyBytes, Utils.HEX.decode
+                    ("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"));
             scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
             t.addOutput(new TransactionOutput(params, t, COIN.multiply(1), scriptPubKeyBytes.toByteArray()));
         } catch (Exception e) {
             // Cannot happen.
             throw new RuntimeException(e);
-        }
+        }        
         genesisBlock.addTransaction(t);
-        genesisBlock.setTime(1491940886L);
-        genesisBlock.setDifficultyTarget(0x1e0ffff0L);
-        genesisBlock.setNonce(1033603);
         return genesisBlock;
     }
 
@@ -170,6 +174,10 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
          checkDifficultyTransitions(sb, block);
     }
     
+    @Override
+    public String[] getDnsSeeds() {
+         return dnsSeeds;
+    }
     
     
     // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L1168
@@ -214,7 +222,7 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
         long start = System.currentTimeMillis();
 
         if (BlockLastSolved == null || BlockLastSolved.getHeight() == 0 || (long)BlockLastSolved.getHeight() < PastBlocksMin)
-        { verifyDifficulty(CoinDefinition.proofOfWorkLimit, storedPrev, nextBlock); }
+        { verifyDifficulty(proofOfWorkLimit, storedPrev, nextBlock); }
 
         int i = 0;
         long LatestBlockTime = BlockLastSolved.getHeader().getTimeSeconds();
@@ -270,9 +278,9 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
             newDifficulty = newDifficulty.divide(BigInteger.valueOf(PastRateTargetSeconds));
         }
 
-        if (newDifficulty.compareTo(CoinDefinition.proofOfWorkLimit) > 0) {
+        if (newDifficulty.compareTo(proofOfWorkLimit) > 0) {
             log.info("Difficulty hit proof of work limit: {}", newDifficulty.toString(16));
-            newDifficulty = CoinDefinition.proofOfWorkLimit;
+            newDifficulty = proofOfWorkLimit;
         }
         
         //log.info("KGW-j Difficulty Calculated: {}", newDifficulty.toString(16));
@@ -414,5 +422,10 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
     @Override
     public AltcoinSerializer getSerializer(boolean parseRetain) {
         return new AltcoinSerializer(this, parseRetain);
+    }
+    
+    @Override
+    public String getTrustPeer() {
+        return "node.onixcoin.info";
     }
 }

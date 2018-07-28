@@ -127,8 +127,8 @@ public class MainController {
                 hyperlink.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
-
-                         getHostServices().showDocument("https://www.onixcoin.info/tx/"+hyperlink.getText());
+                        String explorer = Main.TESTNET ? "https://www.onixcoin.info" : "https://testnet.onixcoin.info";
+                         getHostServices().showDocument(explorer+"/tx/"+hyperlink.getText());
 
                     }
                 });

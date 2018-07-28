@@ -18,11 +18,14 @@ package org.onixcoinj.params;
 import static com.google.common.base.Preconditions.checkState;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import org.bitcoinj.core.AltcoinBlock;
 import org.bitcoinj.core.Block;
 import static org.bitcoinj.core.Coin.COIN;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
@@ -37,9 +40,6 @@ import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.store.MemoryBlockStore;
 import org.bitcoinj.utils.Threading;
 import org.libdohj.core.AltcoinSerializer;
-import org.onixcoinj.core.CoinDefinition;
-import static org.onixcoinj.params.AbstractOnixcoinParams.ID_ONIX_MAINNET;
-import static org.onixcoinj.params.AbstractOnixcoinParams.ONIXCOIN_PROTOCOL_VERSION_CURRENT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
@@ -52,86 +52,99 @@ import org.spongycastle.util.encoders.Hex;
  */
 public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
 
-    private static final Logger log = LoggerFactory.getLogger(OnixcoinMainNetParams.class);
+    private static final Logger log = LoggerFactory.getLogger(OnixcoinTestNetParams.class);
     protected final ReentrantLock lock = Threading.lock("blockchain");
-
+    public static BigInteger proofOfWorkLimit = org.bitcoinj.core.Utils.decodeCompactBits(0x1e0fffffL);  //main.cpp
     /**
      * Keeps a map of block hashes to StoredBlocks.
      */
     private final BlockStore blockStore;
 
-    public static final int MAINNET_MAJORITY_WINDOW = MainNetParams.MAINNET_MAJORITY_WINDOW;
-    public static final int MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED = MainNetParams.MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
-    public static final int MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE = MainNetParams.MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
+    public static final int TESTNET_MAJORITY_WINDOW = 100;
+    public static final int TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED = 75;
+    public static final int TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE = 51;
+    
 
     public OnixcoinTestNetParams() {
         super();
 
-        id = ID_ONIX_MAINNET;
-
+        id = ID_ONIX_TESTNET;
+        
+        // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L2741
         packetMagic = 0xfec4bade;
         maxTarget = Utils.decodeCompactBits(0x1e0fffffL); 
-        port = 51016;
-        addressHeader = 111; // PUBKEY_ADDRESS
-        p2shHeader = 196; // SCRIPT_ADDRESS
+        port = 9944;
+        // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/base58.h#L277
+        addressHeader = 111; // PUBKEY_ADDRESS_TEST
+         // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/base58.h#L278
+        p2shHeader = 196; // SCRIPT_ADDRESS_TEST
         acceptableAddressCodes = new int[]{addressHeader, p2shHeader};
-        dumpedPrivateKeyHeader = 128;  //common to all coins
+        dumpedPrivateKeyHeader = 239;
 
-        this.genesisBlock = createGenesis(this);
+        
+        genesisBlock = createGenesis(this);
+        // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L2801
+        genesisBlock.setTime(1521912794L);
+        genesisBlock.setDifficultyTarget(0x1e0ffff0L);
+        genesisBlock.setNonce(755634);
+        
         spendableCoinbaseDepth = 100;
         subsidyDecreaseBlockCount = 840000;
 
         String genesisHash = genesisBlock.getHashAsString();
 
+        //System.out.println(genesisHash);
         checkState(genesisHash.equals("00000c1f283092a173e73f9f318dc1ca36b02eb706adbbde5c384cd0e649849a"));
         alertSigningKey = Hex.decode("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f");
 
-        majorityEnforceBlockUpgrade = MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
-        majorityRejectBlockOutdated = MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
-        majorityWindow = MAINNET_MAJORITY_WINDOW;
+        majorityEnforceBlockUpgrade = TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
+        majorityRejectBlockOutdated = TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
+        majorityWindow = TESTNET_MAJORITY_WINDOW;
         
         dnsSeeds = new String[]{
-            
+            "dnsseedt.onixcoin.info"
         };
 
-        bip32HeaderPub = 0x049d7cb2;
-        bip32HeaderPriv = 0x049d7878;
+        bip32HeaderPub = 0x043587cf;
+        bip32HeaderPriv = 0x04358394;
 
-//        checkpoints.put(0, Sha256Hash.wrap("000007140b7a6ca0b64965824f5731f6e86daadf19eb299033530b1e61236e43"));
-//        checkpoints.put(30000, Sha256Hash.wrap("0000000000974475481a0c083a65d12806a58f94200e32860999450bf2049c2f"));
-//        checkpoints.put(60000, Sha256Hash.wrap("0000000000123af5ae90c441ca59b3cc12fb5f49cd8cc734f7228ad1f6ef5c61"));
-//        checkpoints.put(90000, Sha256Hash.wrap("000000000000179a0439dcd880f808685e8035206982dcacd09fc2f0e9235190"));
-//        checkpoints.put(120000, Sha256Hash.wrap("000000000000020ab41d21692dfa81ca9b7dab22956212be9be02df36f3c8b49"));
+        checkpoints.put(0, Sha256Hash.wrap("00000c1f283092a173e73f9f318dc1ca36b02eb706adbbde5c384cd0e649849a"));
+        checkpoints.put(3000, Sha256Hash.wrap("0000055235bbbc39ddaa629305018c4a46fc4b7a135a8442c02368085af32cdd"));
 
         blockStore = new MemoryBlockStore(this);
     }
 
     // Testnet Genesis block:
-    // CBlock(hash=000008da0e16960d6c2548da4831323b956d61370e2a3fdc5150188c5c478c49, input=0100000000000000000000000000000000000000000000000000000000000000000000002a5d09737c826a5f8c12307a9c71774cd2e752e2910c9618744f05bc929d01b07ac92153f0ff0f1eb86e964c, PoW=000008da0e16960d6c2548da4831323b956d61370e2a3fdc5150188c5c478c49, ver=1, hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, hashMerkleRoot=b0019d92bc054f7418960c91e252e7d24c77719c7a30128c5f6a827c73095d2a, nTime=1394723194, nBits=1e0ffff0, nNonce=1284927160, vtx=1)
-    // CTransaction(hash=b0019d92bc054f7418960c91e252e7d24c77719c7a30128c5f6a827c73095d2a, ver=1, vin.size=1, vout.size=1, nLockTime=0)
-    // CTxIn(COutPoint(0000000000000000000000000000000000000000000000000000000000000000, 4294967295), coinbase 04ffff001d0104474a6170616e546f6461792031332f4d61722f323031342057617973206579656420746f206d616b6520706c616e65732065617369657220746f2066696e6420696e206f6365616e)
-    // CTxOut(nValue=400.00000000, scriptPubKey=040184710fa689ad5023690c80f3a4)
-    // vMerkleTree: b0019d92bc054f7418960c91e252e7d24c77719c7a30128c5f6a827c73095d2a
-    private static AltcoinBlock createGenesis(NetworkParameters params) {
-        AltcoinBlock genesisBlock = new AltcoinBlock(params, Block.BLOCK_VERSION_GENESIS);
+    // CBlock(hash=00000c1f283092a173e73f9f318dc1ca36b02eb706adbbde5c384cd0e649849a, input=01000000000000000000000000000000000000000000000000000000000000000 00000008d0b8fc93dc614ad2cdcac6bc40ea0c74dedd143c20bcada1b4a120af75cfc44da8bb65af0ff0f1eb2870b00, PoW=00000c1f283092a173e73f9f318dc1ca36b02eb706adbbde5c384cd0e649849a, ver=1, hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, hashMerkleRoot=44fc5cf70a124a1bdaca0bc243d1ed4dc7a00ec46bacdc2cad14c63dc98f0b8d, nTime=1521912794, nBits=1e0ffff0, nNonce=755634, vtx=1)
+    // CTransaction(hash=64e1822ed56cd7068d031fb3a4758e79c19e3386c654066ee0a16791ab807bea, ver=1, vin.size=1, vout.size=1, nLockTime=0)
+    // CTxIn(COutPoint(0000000000000000000000000000000000000000000000000000000000000000, 4294967295), coinbase 04ffff001d0104126f6e69782067656e6573697320626c6f636b)
+    // CTxOut(nValue=1.00000000, scriptPubKey=04678afdb0fe5548271967f1a67130)
+    // vMerkleTree: 64e1822ed56cd7068d031fb3a4758e79c19e3386c654066ee0a16791ab807bea 
+    private static AltcoinBlock createGenesis(AbstractOnixcoinParams params) {
         Transaction t = new Transaction(params);
         try {
             // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L2783
-            byte[] bytes = Hex.decode("04ffff001d0104126f6e69782067656e6573697320626c6f636b");
+            byte[] bytes = Utils.HEX.decode("04ffff001d0104126f6e69782067656e6573697320626c6f636b");
             t.addInput(new TransactionInput(params, t, bytes));
             ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
             // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L2789
-            Script.writeBytes(scriptPubKeyBytes, Hex.decode("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"));
+            Script.writeBytes(scriptPubKeyBytes, Utils.HEX.decode
+                    ("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"));
             scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
             t.addOutput(new TransactionOutput(params, t, COIN.multiply(1), scriptPubKeyBytes.toByteArray()));
         } catch (Exception e) {
             // Cannot happen.
             throw new RuntimeException(e);
-        }
-        genesisBlock.addTransaction(t);
-        genesisBlock.setTime(1491940886L);
-        genesisBlock.setDifficultyTarget(0x1e0ffff0L);
-        genesisBlock.setNonce(1033603);
+        }        
+        
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(t);        
+        AltcoinBlock genesisBlock = new AltcoinBlock(params, Block.BLOCK_VERSION_GENESIS, 
+                Sha256Hash.wrap("0000000000000000000000000000000000000000000000000000000000000000"), 
+                Sha256Hash.wrap("44fc5cf70a124a1bdaca0bc243d1ed4dc7a00ec46bacdc2cad14c63dc98f0b8d"), 
+                1521912794L,
+                0x1e0ffff0L, 755634, transactions);
+        
         return genesisBlock;
     }
 
@@ -157,6 +170,12 @@ public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
     @Override
     public boolean allowMinDifficultyBlocks() {
         return false;
+    }
+    
+    
+    @Override
+    public String[] getDnsSeeds() {
+         return dnsSeeds;
     }
 
     @Override
@@ -205,7 +224,7 @@ public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
         long start = System.currentTimeMillis();
 
         if (BlockLastSolved == null || BlockLastSolved.getHeight() == 0 || (long) BlockLastSolved.getHeight() < PastBlocksMin) {
-            verifyDifficulty(CoinDefinition.proofOfWorkLimit, storedPrev, nextBlock);
+            verifyDifficulty(proofOfWorkLimit, storedPrev, nextBlock);
         }
 
         int i = 0;
@@ -267,9 +286,9 @@ public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
             newDifficulty = newDifficulty.divide(BigInteger.valueOf(PastRateTargetSeconds));
         }
 
-        if (newDifficulty.compareTo(CoinDefinition.proofOfWorkLimit) > 0) {
+        if (newDifficulty.compareTo(proofOfWorkLimit) > 0) {
             log.info("Difficulty hit proof of work limit: {}", newDifficulty.toString(16));
-            newDifficulty = CoinDefinition.proofOfWorkLimit;
+            newDifficulty = proofOfWorkLimit;
         }
 
         //log.info("KGW-j Difficulty Calculated: {}", newDifficulty.toString(16));
@@ -409,5 +428,10 @@ public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
     @Override
     public AltcoinSerializer getSerializer(boolean parseRetain) {
         return new AltcoinSerializer(this, parseRetain);
+    }
+
+    @Override
+    public String getTrustPeer() {
+        return "107.170.213.97"; // 192.168.0.162
     }
 }

@@ -15,14 +15,21 @@
  */
 package org.onixcoinj.params;
 
+import java.io.ByteArrayOutputStream;
+import org.bitcoinj.core.AltcoinBlock;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.Coin;
 import static org.bitcoinj.core.Coin.COIN;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
+import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionInput;
+import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.core.Utils;
 import org.bitcoinj.core.VerificationException;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.utils.MonetaryFormat;
@@ -103,14 +110,8 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
         targetTimespan = ONIX_TARGET_TIMESPAN;
         maxTarget = Utils.decodeCompactBits(0x1e0fffffL); // TODO: figure out the Onixcoin value of this
 
-        // https://github.com/jestevez/onixcore/blob/3d308b7c2f040f3347f09d0f6eedf4c6847b037c/networks.js#L9
-        packetMagic = 0xf3c3b9de;
-        // https://github.com/jestevez/onixcore/blob/3d308b7c2f040f3347f09d0f6eedf4c6847b037c/networks.js#L13
-        bip32HeaderPub = 0x049d7cb2; //The 4 byte header that serializes in base58 to "xpub". (?)
-        // https://github.com/jestevez/onixcore/blob/3d308b7c2f040f3347f09d0f6eedf4c6847b037c/networks.js#L14
-        bip32HeaderPriv = 0x049d7878; //The 4 byte header that serializes in base58 to "xprv" (?)
-
     }
+    
 
     @Override
     public Coin getBlockSubsidy(final int height) {
@@ -176,4 +177,7 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
     }
     @Override
     public abstract void checkDifficultyTransitions(StoredBlock sb, Block block, BlockStore bs) throws VerificationException, BlockStoreException;
+    
+    
+    public abstract String getTrustPeer();
 }

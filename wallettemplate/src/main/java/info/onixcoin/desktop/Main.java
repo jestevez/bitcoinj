@@ -18,9 +18,8 @@ package info.onixcoin.desktop;
 
 import com.google.common.util.concurrent.*;
 import javafx.scene.input.*;
-import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.kits.WalletAppKit;
-import org.bitcoinj.params.*;
+import org.bitcoinj.net.discovery.DnsDiscovery;
 import org.bitcoinj.utils.BriefLogFormatter;
 import org.bitcoinj.utils.Threading;
 import org.bitcoinj.wallet.DeterministicSeed;
@@ -50,9 +49,13 @@ import java.util.ResourceBundle;
 import javafx.application.HostServices;
 import javafx.scene.image.Image;
 import org.bitcoinj.core.PeerAddress;
+import org.onixcoinj.params.AbstractOnixcoinParams;
+import org.onixcoinj.params.OnixcoinTestNetParams;
 
 public class Main extends Application {
-    public static NetworkParameters params = OnixcoinMainNetParams.get();
+    public final static boolean TESTNET = true;
+    public final static AbstractOnixcoinParams params = TESTNET ? OnixcoinTestNetParams.get() : OnixcoinMainNetParams.get();
+    
     public static final String APP_NAME = "wallet";
     private static final String WALLET_FILE_NAME = APP_NAME.toLowerCase().replaceAll("[^a-zA-Z0-9.-]", "_") + "-"
             + params.getPaymentProtocolId();
@@ -157,7 +160,7 @@ public class Main extends Application {
             }
         }, Platform::runLater);
         
-       
+        
         
         bitcoin.startAsync();
          
@@ -171,6 +174,7 @@ public class Main extends Application {
             protected void onSetupCompleted() {
                 // Don't make the user wait for confirmations for now, as the intention is they're sending it
                 // their own money!
+		bitcoin.peerGroup().addPeerDiscovery(new DnsDiscovery(params));
                 bitcoin.wallet().allowSpendingUnconfirmedTransactions();
                 Platform.runLater(controller::onBitcoinSetup);
             }
@@ -180,9 +184,9 @@ public class Main extends Application {
         
         try {
             // Forze sync with my public node... node.onixcoin.info
-            InetAddress addr = InetAddress.getByName("node.onixcoin.info");
+            InetAddress addr = InetAddress.getByName(params.getTrustPeer());
             PeerAddress address =  new PeerAddress(addr);
-            address.setPort(41016);
+            address.setPort(TESTNET ? 9944  : 41016);
             bitcoin.setPeerNodes(address);
         } catch (UnknownHostException ex) {
            ex.printStackTrace();
@@ -191,9 +195,9 @@ public class Main extends Application {
         
         // Now configure and start the appkit. This will take a second or two - we could show a temporary splash screen
         // or progress widget to keep the user engaged whilst we initialise, but we don't.
-        if (params == RegTestParams.get()) {
-            bitcoin.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
-        }
+//        if (params == RegTestParams.get()) {
+//            bitcoin.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
+//        }
         bitcoin.setDownloadListener(controller.progressBarUpdater())
                .setBlockingStartup(false)
                .setUserAgent(APP_NAME, "1.0");
@@ -239,6 +243,7 @@ public class Main extends Application {
         }
 
         public void done() {
+
             checkGuiThread();
             if (ui == null) return;  // In the middle of being dismissed and got an extra click.
             explodeOut(ui);

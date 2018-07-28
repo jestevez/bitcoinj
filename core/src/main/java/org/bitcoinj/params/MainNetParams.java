@@ -70,7 +70,13 @@ public class MainNetParams extends AbstractBitcoinNetParams {
         checkpoints.put(91880, Sha256Hash.wrap("00000000000743f190a18c5577a3c2d2a1f610ae9601ac046a38084ccb7cd721"));
         checkpoints.put(200000, Sha256Hash.wrap("000000000000034a7dedef4a161fa058a2d67a173a90155f3a2fe6fc132e0ebf"));
 
-        dnsSeeds = new String[] {
+	dnsSeeds = new String[]{
+            "seed5.cryptolife.net",
+            "seed2.cryptolife.net",
+            "seed3.cryptolife.net",
+            "electrum6.cryptolife.net"
+        };
+        /* dnsSeeds = new String[] {
                 "seed.bitcoin.sipa.be",         // Pieter Wuille
                 "dnsseed.bluematt.me",          // Matt Corallo
                 "dnsseed.bitcoin.dashjr.org",   // Luke Dashjr
@@ -86,7 +92,7 @@ public class MainNetParams extends AbstractBitcoinNetParams {
                         ECKey.fromPublicOnly(Utils.HEX.decode("0238746c59d46d5408bf8b1d0af5740fe1a6e1703fcb56b2953f0b965c740d256f")),
                         URI.create("http://httpseed.bitcoin.schildbach.de/peers")
                 )
-        };
+        }; */
 
 
         // note: These are in big-endian format, which is what the SeedPeers code expects.
@@ -103,6 +109,7 @@ public class MainNetParams extends AbstractBitcoinNetParams {
 
         // Updated Nov. 4th 2017
         addrSeeds = new int[]{
+/*
                 // -- seed.bitcoin.sipa.be --
                 0x254187d,  0x1af0735d, 0x20b72088, 0x30a1c321, 0x3515cb9f, 0x4539448a, 0x459caed5,
                 0x4b0559d1, 0x5c88c9c1, 0x726fc523, 0x753b448a, 0x75b25c50, 0x7efc63b3, 0x8e79e849,
@@ -127,6 +134,7 @@ public class MainNetParams extends AbstractBitcoinNetParams {
                 0x3ee58c9e, 0x45ea0747, 0x4abd2088, 0x4d0d97d8, 0x5246b2b3, 0x5a0ae25b, 0x5a0ea9d9,
                 0x5a55f450, 0x64610545, 0x6ed40d3e, 0x7a48cb4a, 0x98c5b35d, 0xaeb473bc, 0xdcefff86,
                 0xe170d951, 0xe76280b2, 0xfa1f645e, 0xfb96466d,
+*/
         };
     }
 

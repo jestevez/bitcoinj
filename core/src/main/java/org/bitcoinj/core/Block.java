@@ -1028,4 +1028,4 @@ public class Block extends Message {
     public boolean isBIP65() {
         return version >= BLOCK_VERSION_BIP65;
     }
-}
+    }
