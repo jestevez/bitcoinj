@@ -411,7 +411,7 @@ public class WalletProtobufSerializer {
         try {
             Protos.Wallet walletProto = parseToProto(input);
             final String paramsID = walletProto.getNetworkIdentifier();
-            NetworkParameters params = org.onixcoinj.params.OnixcoinMainNetParams.get(); // .fromID(paramsID);
+            NetworkParameters params = org.onixcoinj.params.AbstractOnixcoinParams.fromID(paramsID);
             if (params == null)
                 throw new UnreadableWalletException("Unknown network parameters ID " + paramsID);
             return readWallet(params, extensions, walletProto, forceReset);

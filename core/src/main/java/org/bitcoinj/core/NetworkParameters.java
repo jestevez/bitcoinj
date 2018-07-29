@@ -214,8 +214,8 @@ public abstract class NetworkParameters {
     }
 
     /** Returns the network parameters for the given string ID or NULL if not recognized. */
-    @Nullable
-    public static NetworkParameters fromID(String id) {
+/*    @Nullable
+     public static NetworkParameters fromID(String id) {
         if (id.equals(ID_MAINNET)) {
             return MainNetParams.get();
         } else if (id.equals(ID_TESTNET)) {
@@ -228,9 +228,19 @@ public abstract class NetworkParameters {
             return null;
         }
     }
+*/
+    public static NetworkParameters fromID(String id) {
+        if (id.equals(ID_MAINNET)) {
+            return org.onixcoinj.params.OnixcoinMainNetParams.get();
+        } else if (id.equals(ID_TESTNET)) {
+            return org.onixcoinj.params.OnixcoinTestNetParams.get();
+        } else {
+            return null;
+        }
+    }
 
     /** Returns the network parameters for the given string paymentProtocolID or NULL if not recognized. */
-    @Nullable
+/*    @Nullable
     public static NetworkParameters fromPmtProtocolID(String pmtProtocolId) {
         if (pmtProtocolId.equals(PAYMENT_PROTOCOL_ID_MAINNET)) {
             return MainNetParams.get();
@@ -240,6 +250,16 @@ public abstract class NetworkParameters {
             return UnitTestParams.get();
         } else if (pmtProtocolId.equals(PAYMENT_PROTOCOL_ID_REGTEST)) {
             return RegTestParams.get();
+        } else {
+            return null;
+        }
+    }
+*/
+    public static NetworkParameters fromPmtProtocolID(String pmtProtocolId) {
+        if (pmtProtocolId.equals(PAYMENT_PROTOCOL_ID_MAINNET)) {
+            return org.onixcoinj.params.OnixcoinMainNetParams.get();
+        } else if (pmtProtocolId.equals(PAYMENT_PROTOCOL_ID_TESTNET)) {
+            return org.onixcoinj.params.OnixcoinTestNetParams.get();
         } else {
             return null;
         }

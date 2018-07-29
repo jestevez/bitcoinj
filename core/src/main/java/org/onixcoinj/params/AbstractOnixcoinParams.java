@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
  * @author Jose Luis Estevez jose.estevez.prieto@gmail.com
  */
 public abstract class AbstractOnixcoinParams extends NetworkParameters implements AltcoinNetworkParameters {
-
     public static final MonetaryFormat ONIX;
     public static final MonetaryFormat MONIX;
     public static final MonetaryFormat ONIXTOSHI;
@@ -94,7 +93,17 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
     /**
      * The string returned by getId() for regtest.
      */
-    public static final String ID_ONIX_REGTEST = "regtest";
+    public static final String ID_ONIX_REGTEST = "info.onixcoin.regtest";
+
+    /** The string returned by getId() for the main, production network where people trade things. */
+    public static final String ID_MAINNET = ID_ONIX_MAINNET ;
+    /** The string returned by getId() for the testnet. */
+    public static final String ID_TESTNET = ID_ONIX_TESTNET ;
+    /** The string returned by getId() for regtest mode. */
+    public static final String ID_REGTEST = ID_ONIX_REGTEST;
+    /** Unit test network. */
+    public static final String ID_UNITTESTNET = "info.onixcoin.unittest";
+
 
     public static final int ONIXCOIN_PROTOCOL_VERSION_MINIMUM = 70010;
     public static final int ONIXCOIN_PROTOCOL_VERSION_CURRENT = 70010;
@@ -180,4 +189,15 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
     
     
     public abstract String getTrustPeer();
+
+    /** Returns the network parameters for the given string ID or NULL if not recognized. */
+    public static NetworkParameters fromID(String id) {
+        if (id.equals(ID_MAINNET)) {
+            return org.onixcoinj.params.OnixcoinMainNetParams.get();
+        } else if (id.equals(ID_TESTNET)) {
+            return org.onixcoinj.params.OnixcoinTestNetParams.get();
+        } else {
+            return null;
+        }
+    }
 }
