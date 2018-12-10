@@ -53,7 +53,7 @@ import org.onixcoinj.params.AbstractOnixcoinParams;
 import org.onixcoinj.params.OnixcoinTestNetParams;
 
 public class Main extends Application {
-    public final static boolean TESTNET = true;
+    public final static boolean TESTNET = false;
     public final static AbstractOnixcoinParams params = TESTNET ? OnixcoinTestNetParams.get() : OnixcoinMainNetParams.get();
     
     public static final String APP_NAME = "wallet";
@@ -150,7 +150,7 @@ public class Main extends Application {
         }
 
         mainWindow.show();
-
+        
         WalletSetPasswordController.estimateKeyDerivationTimeMsec();
 
         bitcoin.addListener(new Service.Listener() {
@@ -163,7 +163,7 @@ public class Main extends Application {
         
         
         bitcoin.startAsync();
-         
+        
         scene.getAccelerators().put(KeyCombination.valueOf("Shortcut+F"), () -> bitcoin.peerGroup().getDownloadPeer().close());
     }
 
