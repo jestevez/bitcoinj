@@ -32,7 +32,6 @@ import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.core.Utils;
 import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.store.BlockStore;
@@ -102,7 +101,8 @@ public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
         majorityWindow = TESTNET_MAJORITY_WINDOW;
         
         dnsSeeds = new String[]{
-            "dnsseedt.onixcoin.info"
+            "dnsseedt.onixcoin.info",
+            "107.170.213.97" // Add @hbastidas testnet ip address testnet
         };
 
         bip32HeaderPub = 0x043587cf;
@@ -433,5 +433,5 @@ public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
     @Override
     public String getTrustPeer() {
         return "107.170.213.97"; // 192.168.0.162
-    }
+}
 }
