@@ -15,21 +15,14 @@
  */
 package org.onixcoinj.params;
 
-import java.io.ByteArrayOutputStream;
-import org.bitcoinj.core.AltcoinBlock;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.Coin;
 import static org.bitcoinj.core.Coin.COIN;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
-import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionInput;
-import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.core.Utils;
 import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
 import org.bitcoinj.utils.MonetaryFormat;
@@ -106,7 +99,7 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
 
 
     public static final int ONIXCOIN_PROTOCOL_VERSION_MINIMUM = 70010;
-    public static final int ONIXCOIN_PROTOCOL_VERSION_CURRENT = 70010;
+    public static final int ONIXCOIN_PROTOCOL_VERSION_CURRENT = 70011;
 
     // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L1068
     private static final Coin BASE_SUBSIDY = COIN.multiply(60);

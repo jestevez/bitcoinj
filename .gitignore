@@ -6,3 +6,5 @@ target
 *.iml
 *.chain
 *.spvchain
+*.wallet
+.DS_Store

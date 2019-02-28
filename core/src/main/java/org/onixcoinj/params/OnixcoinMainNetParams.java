@@ -31,7 +31,6 @@ import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.core.Utils;
 import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.store.BlockStore;
@@ -98,15 +97,24 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
 
         // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/net.cpp#L1195
         dnsSeeds = new String[]{
-            "seed5.cryptolife.net",
-            "seed2.cryptolife.net",
-            "seed3.cryptolife.net",
-            "electrum6.cryptolife.net",
-            "dnsseed.onixcoin.info"
+            "149.28.108.110",
+            "159.203.185.254",
+            "176.31.106.35",
+            "192.34.56.133",
+            "217.69.4.178",
+            "152.186.36.84",
+            "5.189.167.223",
+            "node.onixcoin.info",
+            "seed.onixcoin.com",
+            "electrum6.cryptolife.net"
         };
         
-        bip32HeaderPub = 0x049d7cb2;
-        bip32HeaderPriv = 0x049d7878;
+        //ypub
+        //bip32HeaderPub = 0x049d7cb2;
+        //bip32HeaderPriv = 0x049d7878;
+        //xpub
+        bip32HeaderPub = 0x0488b21e;
+        bip32HeaderPriv = 0x0488ade4;
 
         checkpoints.put(0,       Sha256Hash.wrap("000007140b7a6ca0b64965824f5731f6e86daadf19eb299033530b1e61236e43"));
         checkpoints.put(30000,   Sha256Hash.wrap("0000000000974475481a0c083a65d12806a58f94200e32860999450bf2049c2f"));
@@ -114,6 +122,9 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
         checkpoints.put(90000,   Sha256Hash.wrap("000000000000179a0439dcd880f808685e8035206982dcacd09fc2f0e9235190"));
         checkpoints.put(120000,  Sha256Hash.wrap("000000000000020ab41d21692dfa81ca9b7dab22956212be9be02df36f3c8b49"));
 
+        checkpoints.put(269168, Sha256Hash.wrap("0x000000000004edc83638eddda4c889a9c269b88b923ec7c70803cf38068ab393"));
+        checkpoints.put(272069, Sha256Hash.wrap("0x00000000000018df2e974823546c5373e8bdb078c2880049e4cfc3d8036ec665"));
+        
         blockStore =  new MemoryBlockStore(this);
     }
 
