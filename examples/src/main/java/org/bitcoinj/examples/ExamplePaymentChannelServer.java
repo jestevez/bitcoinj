@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.net.SocketAddress;
 import java.util.List;
+import org.onixcoinj.params.OnixcoinMainNetParams;
 
 /**
  * Simple server that listens on port 4242 for incoming payment channels.
@@ -50,16 +51,18 @@ public class ExamplePaymentChannelServer implements PaymentChannelServerListener
 
     public static void main(String[] args) throws Exception {
         BriefLogFormatter.init();
-        OptionParser parser = new OptionParser();
-        OptionSpec<NetworkEnum> net = parser.accepts("net", "The network to run the examples on").withRequiredArg().ofType(NetworkEnum.class).defaultsTo(NetworkEnum.TEST);
-        parser.accepts("help", "Displays program options");
-        OptionSet opts = parser.parse(args);
-        if (opts.has("help") || !opts.has(net)) {
-            System.err.println("usage: ExamplePaymentChannelServer --net=MAIN/TEST/REGTEST");
-            parser.printHelpOn(System.err);
-            return;
-        }
-        NetworkParameters params = net.value(opts).get();
+//        OptionParser parser = new OptionParser();
+//        OptionSpec<NetworkEnum> net = parser.accepts("net", "The network to run the examples on").withRequiredArg().ofType(NetworkEnum.class).defaultsTo(NetworkEnum.TEST);
+//        parser.accepts("help", "Displays program options");
+//        OptionSet opts = parser.parse(args);
+//        if (opts.has("help") || !opts.has(net)) {
+//            System.err.println("usage: ExamplePaymentChannelServer --net=MAIN/TEST/REGTEST");
+//            parser.printHelpOn(System.err);
+//            return;
+//        }
+//        NetworkParameters params = net.value(opts).get();
+
+OnixcoinMainNetParams params = OnixcoinMainNetParams.get();
         new ExamplePaymentChannelServer().run(params);
     }
 

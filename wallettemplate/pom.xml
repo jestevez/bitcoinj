@@ -45,7 +45,7 @@
                                     <mainClass>info.onixcoin.desktop.Main</mainClass>
                                 </transformer>
                             </transformers>
-                            <outputFile>target/${project.artifactId}-shaded.jar</outputFile>
+                            <outputFile>target/${project.artifactId}-${project.version}-full.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>

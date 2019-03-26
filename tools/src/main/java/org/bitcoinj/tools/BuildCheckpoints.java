@@ -19,9 +19,9 @@ package org.bitcoinj.tools;
 
 import org.bitcoinj.core.listeners.NewBestBlockListener;
 import org.bitcoinj.core.*;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.params.RegTestParams;
-import org.bitcoinj.params.TestNet3Params;
+//import org.bitcoinj.params.MainNetParams;
+//import org.bitcoinj.params.RegTestParams;
+//import org.bitcoinj.params.TestNet3Params;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.MemoryBlockStore;
 import org.bitcoinj.utils.BriefLogFormatter;
@@ -48,6 +48,8 @@ import java.util.Date;
 import java.util.TreeMap;
 
 import static com.google.common.base.Preconditions.checkState;
+import org.onixcoinj.params.OnixcoinMainNetParams;
+import org.onixcoinj.params.OnixcoinTestNetParams;
 
 /**
  * Downloads and verifies a full chain from your local peer, emitting checkpoints at each difficulty transition period
@@ -75,17 +77,17 @@ public class BuildCheckpoints {
         switch (netFlag.value(options)) {
             case MAIN:
             case PROD:
-                params = MainNetParams.get();
+                params = OnixcoinMainNetParams.get();
                 suffix = "";
                 break;
             case TEST:
-                params = TestNet3Params.get();
+                params = OnixcoinTestNetParams.get();
                 suffix = "-testnet";
                 break;
-            case REGTEST:
-                params = RegTestParams.get();
-                suffix = "-regtest";
-                break;
+//            case REGTEST:
+//                params = RegTestParams.get();
+//                suffix = "-regtest";
+//                break;
             default:
                 throw new RuntimeException("Unreachable.");
         }

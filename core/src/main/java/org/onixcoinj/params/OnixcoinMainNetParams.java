@@ -84,7 +84,7 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
         genesisBlock.setNonce(1033603);
         
         spendableCoinbaseDepth = 100;
-        subsidyDecreaseBlockCount = 840000;
+        subsidyDecreaseBlockCount = 345600;
 
         String genesisHash = genesisBlock.getHashAsString();
         
@@ -115,8 +115,30 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
         checkpoints.put(90000,   Sha256Hash.wrap("000000000000179a0439dcd880f808685e8035206982dcacd09fc2f0e9235190"));
         checkpoints.put(120000,  Sha256Hash.wrap("000000000000020ab41d21692dfa81ca9b7dab22956212be9be02df36f3c8b49"));
 
-        checkpoints.put(269168, Sha256Hash.wrap("0x000000000004edc83638eddda4c889a9c269b88b923ec7c70803cf38068ab393"));
-        checkpoints.put(272069, Sha256Hash.wrap("0x00000000000018df2e974823546c5373e8bdb078c2880049e4cfc3d8036ec665"));
+        checkpoints.put(269168,  Sha256Hash.wrap("000000000004edc83638eddda4c889a9c269b88b923ec7c70803cf38068ab393"));
+        checkpoints.put(272069,  Sha256Hash.wrap("00000000000018df2e974823546c5373e8bdb078c2880049e4cfc3d8036ec665"));
+        
+        checkpoints.put(300000, Sha256Hash.wrap("00000000000502760fe120b5be6f315513af417cd7942ce4f760399d7fe37707"));
+        checkpoints.put(301000, Sha256Hash.wrap("000000000004c7fbbb7ee14c8dccc5163f766a0828fe5111458ae083bc94ec15"));
+        checkpoints.put(302000, Sha256Hash.wrap("00000000000352758df557025fe426025240e6e1379de176b2c75e3cfae3181f"));
+        checkpoints.put(303000, Sha256Hash.wrap("0000000000058c5bed0aa9ab9c138593a508dbf8ff1d71f9089f081d559a8dc8"));
+        checkpoints.put(304000, Sha256Hash.wrap("000000000001eb7863e9d3867dc947c55e1471024b56206d76ecbead5f09862e"));
+        checkpoints.put(305000, Sha256Hash.wrap("00000000000295aa7b3c89eb9ebbb58b9b28133ad267bd0f3353ea7f7b8ac77c"));
+        checkpoints.put(306000, Sha256Hash.wrap("00000000000073832dba9660b59beb1d05f36995dc8eefd94b997d37f29233fd"));
+        checkpoints.put(307000, Sha256Hash.wrap("00000000000254f8d4f83dd173f9a8e9324d564d9fce5d569ee1e1a7d2eebda0"));
+        checkpoints.put(308000, Sha256Hash.wrap("0000000000026c9f4750ef1c5c475919152186e672f5d65998009645353f1059"));
+        checkpoints.put(309000, Sha256Hash.wrap("000000000002b37239c39992818251b862c8c8d1af403d5050d588e4eab9d0f6"));
+        checkpoints.put(310000, Sha256Hash.wrap("000000000006423edd1f1c09de4b77d1fa1cb2082cff8972b045c3df285acab2"));
+        checkpoints.put(311000, Sha256Hash.wrap("000000000005531ffe060f16f212179f73b5b810a32e979f921cdaa08e3a794f"));
+        checkpoints.put(312000, Sha256Hash.wrap("00000000000461a40b2a7569279e12685a5b0d01a60684e0914f9b4a03048ceb"));
+        checkpoints.put(313000, Sha256Hash.wrap("000000000001dbfcaf0c2cb23dc869f52163158c86b080580325c46d9901106d"));
+        checkpoints.put(314000, Sha256Hash.wrap("00000000000003acb4c3f90932348a2ef627a27cfb48f28e9f7130f02004be07"));
+        checkpoints.put(315000, Sha256Hash.wrap("000000000000434d1217ba061d6ef3e3a971680ae71cea0b9c42c65e64f9be69"));
+        checkpoints.put(316000, Sha256Hash.wrap("000000000002a7a273852520aeb96b045f95b2fa15e235df9a2c915bb13c3662"));
+        checkpoints.put(317000, Sha256Hash.wrap("000000000005a82db0ac7190e66d13089526d357ff067e8cef6449ea1b904ff0"));
+        checkpoints.put(317500, Sha256Hash.wrap("0000000000033b345872b9749fddf57853f05a195c07689bb48a2b0fa72368bc"));
+        checkpoints.put(317899, Sha256Hash.wrap("000000000003a185e15f9ebd7308bdda33fabc25e3f408dc6634dd787c4c3f8d"));
+        
         
         blockStore =  new MemoryBlockStore(this);
     }
@@ -230,7 +252,7 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
 
         int i = 0;
         long LatestBlockTime = BlockLastSolved.getHeader().getTimeSeconds();
-
+        
         for (i = 1; BlockReading != null && BlockReading.getHeight() > 0; i++) {
             if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
             PastBlocksMass++;
@@ -238,12 +260,21 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
             if (i == 1)	{ PastDifficultyAverage = BlockReading.getHeader().getDifficultyTargetAsInteger(); }
             else        { PastDifficultyAverage = ((BlockReading.getHeader().getDifficultyTargetAsInteger().subtract(PastDifficultyAveragePrev)).divide(BigInteger.valueOf(i)).add(PastDifficultyAveragePrev)); }
             PastDifficultyAveragePrev = PastDifficultyAverage;
-
-            PastRateActualSeconds			= BlockLastSolved.getHeader().getTimeSeconds() - BlockReading.getHeader().getTimeSeconds();
+            // FIX https://github.com/onix-project/onixcoin/commit/afa1242aaa73116b4d3fbd5de21462ea7ec3e196
+            if (LatestBlockTime < BlockReading.getHeader().getTimeSeconds()) {
+                if (BlockReading.getHeight() > 317910) { 
+                    LatestBlockTime = BlockReading.getHeader().getTimeSeconds();
+                }
+            }
+            PastRateActualSeconds			= LatestBlockTime - BlockReading.getHeader().getTimeSeconds();
             PastRateTargetSeconds			= TargetBlocksSpacingSeconds * PastBlocksMass;
             PastRateAdjustmentRatio			= 1.0f;
             
-            if (PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
+            if (BlockReading.getHeight() > 317910) {
+                if (PastRateActualSeconds < 1) { PastRateActualSeconds = 1; }
+            } else {
+                if (PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
+            }
             
             if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
                 PastRateAdjustmentRatio			= (double)PastRateTargetSeconds / PastRateActualSeconds;

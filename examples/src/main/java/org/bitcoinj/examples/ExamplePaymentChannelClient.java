@@ -47,6 +47,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 import static org.bitcoinj.core.Coin.CENT;
+import org.onixcoinj.params.OnixcoinMainNetParams;
 
 /**
  * Simple client that connects to the given host, opens a channel, and pays one cent.
@@ -60,38 +61,39 @@ public class ExamplePaymentChannelClient {
 
     public static void main(String[] args) throws Exception {
         BriefLogFormatter.init();
-        OptionParser parser = new OptionParser();
-        OptionSpec<NetworkEnum> net = parser.accepts("net", "The network to run the examples on").withRequiredArg().ofType(NetworkEnum.class).defaultsTo(NetworkEnum.TEST);
-        OptionSpec<Integer> version = parser.accepts("version", "The payment channel protocol to use").withRequiredArg().ofType(Integer.class);
-        parser.accepts("help", "Displays program options");
-        OptionSet opts = parser.parse(args);
-        if (opts.has("help") || !opts.has(net) || opts.nonOptionArguments().size() != 1) {
-            System.err.println("usage: ExamplePaymentChannelClient --net=MAIN/TEST/REGTEST --version=1/2 host");
-            parser.printHelpOn(System.err);
-            return;
-        }
+//        OptionParser parser = new OptionParser();
+//        OptionSpec<NetworkEnum> net = parser.accepts("net", "The network to run the examples on").withRequiredArg().ofType(NetworkEnum.class).defaultsTo(NetworkEnum.TEST);
+//        OptionSpec<Integer> version = parser.accepts("version", "The payment channel protocol to use").withRequiredArg().ofType(Integer.class);
+//        parser.accepts("help", "Displays program options");
+//        OptionSet opts = parser.parse(args);
+//        if (opts.has("help") || !opts.has(net) || opts.nonOptionArguments().size() != 1) {
+//            System.err.println("usage: ExamplePaymentChannelClient --net=MAIN/TEST/REGTEST --version=1/2 host");
+//            parser.printHelpOn(System.err);
+//            return;
+//        }
         PaymentChannelClient.VersionSelector versionSelector = PaymentChannelClient.VersionSelector.VERSION_1;
-        if (opts.has("version")) {
-            switch (version.value(opts)) {
-                case 1:
-                    versionSelector = PaymentChannelClient.VersionSelector.VERSION_1;
-                    break;
-                case 2:
-                    versionSelector = PaymentChannelClient.VersionSelector.VERSION_2;
-                    break;
-                default:
-                    System.err.println("Invalid version - valid versions are 1, 2");
-                    return;
-            }
-        }
-        NetworkParameters params = net.value(opts).get();
-        new ExamplePaymentChannelClient().run(opts.nonOptionArguments().get(0), versionSelector, params);
+//        if (opts.has("version")) {
+//            switch (version.value(opts)) {
+//                case 1:
+//                    versionSelector = PaymentChannelClient.VersionSelector.VERSION_1;
+//                    break;
+//                case 2:
+//                    versionSelector = PaymentChannelClient.VersionSelector.VERSION_2;
+//                    break;
+//                default:
+//                    System.err.println("Invalid version - valid versions are 1, 2");
+//                    return;
+//            }
+//        }
+//        NetworkParameters params = net.value(opts).get();
+OnixcoinMainNetParams params = OnixcoinMainNetParams.get();
+        new ExamplePaymentChannelClient().run("ExamplePaymentChannelClient", versionSelector, params);
     }
 
     public ExamplePaymentChannelClient() {
         channelSize = CENT;
         myKey = new ECKey();
-        params = RegTestParams.get();
+         params = OnixcoinMainNetParams.get();
     }
 
     public void run(final String host, PaymentChannelClient.VersionSelector versionSelector, final NetworkParameters params) throws Exception {

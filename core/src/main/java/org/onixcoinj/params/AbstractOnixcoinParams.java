@@ -15,6 +15,7 @@
  */
 package org.onixcoinj.params;
 
+import java.math.BigInteger;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.Coin;
 import static org.bitcoinj.core.Coin.COIN;
@@ -98,11 +99,13 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
     public static final String ID_UNITTESTNET = "info.onixcoin.unittest";
 
 
-    public static final int ONIXCOIN_PROTOCOL_VERSION_MINIMUM = 70011;
-    public static final int ONIXCOIN_PROTOCOL_VERSION_CURRENT = 70011;
+    public static final int ONIXCOIN_PROTOCOL_VERSION_MINIMUM = 70012;
+    public static final int ONIXCOIN_PROTOCOL_VERSION_CURRENT = 70012;
 
     // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L1068
     private static final Coin BASE_SUBSIDY = COIN.multiply(60);
+    private static final Coin PREMINE = COIN.multiply(100000000);
+    private static final Coin GENESIS = COIN.multiply(0);
 
     protected Logger log = LoggerFactory.getLogger(AbstractOnixcoinParams.class);
 
@@ -117,7 +120,19 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
 
     @Override
     public Coin getBlockSubsidy(final int height) {
+        
+        
+        if (height == 0) {
+            return GENESIS;// genesis
+        }
+
+        if (height == 1) {
+            return PREMINE;// pre-mine
+        }
+        
         return BASE_SUBSIDY.shiftRight(height / getSubsidyDecreaseBlockCount());
+        
+        
     }
 
     public MonetaryFormat getMonetaryFormat() {
