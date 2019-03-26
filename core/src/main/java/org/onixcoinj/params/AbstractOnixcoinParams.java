@@ -98,7 +98,7 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
     public static final String ID_UNITTESTNET = "info.onixcoin.unittest";
 
 
-    public static final int ONIXCOIN_PROTOCOL_VERSION_MINIMUM = 70010;
+    public static final int ONIXCOIN_PROTOCOL_VERSION_MINIMUM = 70011;
     public static final int ONIXCOIN_PROTOCOL_VERSION_CURRENT = 70011;
 
     // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L1068

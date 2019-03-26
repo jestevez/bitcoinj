@@ -97,21 +97,14 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
 
         // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/net.cpp#L1195
         dnsSeeds = new String[]{
-            "149.28.108.110",
-            "159.203.185.254",
-            "176.31.106.35",
-            "192.34.56.133",
-            "217.69.4.178",
-            "152.186.36.84",
-            "5.189.167.223",
             "node.onixcoin.info",
             "seed.onixcoin.com",
             "electrum6.cryptolife.net"
         };
         
         //ypub
-        //bip32HeaderPub = 0x049d7cb2;
-        //bip32HeaderPriv = 0x049d7878;
+//        bip32HeaderPub = 0x049d7cb2;
+//        bip32HeaderPriv = 0x049d7878;
         //xpub
         bip32HeaderPub = 0x0488b21e;
         bip32HeaderPriv = 0x0488ade4;
