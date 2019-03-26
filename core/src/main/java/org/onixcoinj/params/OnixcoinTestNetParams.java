@@ -88,7 +88,7 @@ public class OnixcoinTestNetParams extends AbstractOnixcoinParams {
         genesisBlock.setNonce(755634);
         
         spendableCoinbaseDepth = 100;
-        subsidyDecreaseBlockCount = 840000;
+        subsidyDecreaseBlockCount = 345600;
 
         String genesisHash = genesisBlock.getHashAsString();
 

@@ -138,8 +138,9 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
         checkpoints.put(317000, Sha256Hash.wrap("000000000005a82db0ac7190e66d13089526d357ff067e8cef6449ea1b904ff0"));
         checkpoints.put(317500, Sha256Hash.wrap("0000000000033b345872b9749fddf57853f05a195c07689bb48a2b0fa72368bc"));
         checkpoints.put(317899, Sha256Hash.wrap("000000000003a185e15f9ebd7308bdda33fabc25e3f408dc6634dd787c4c3f8d"));
-        
-        
+        // Block hito
+        checkpoints.put(330000, Sha256Hash.wrap("000000000000447279ba6970cb91dcdaae693c1b4725cb4847fa05ce611256c6"));
+
         blockStore =  new MemoryBlockStore(this);
     }
 
@@ -262,7 +263,7 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
             PastDifficultyAveragePrev = PastDifficultyAverage;
             // FIX https://github.com/onix-project/onixcoin/commit/afa1242aaa73116b4d3fbd5de21462ea7ec3e196
             if (LatestBlockTime < BlockReading.getHeader().getTimeSeconds()) {
-                if (BlockReading.getHeight() > 317910) { 
+                if (BlockReading.getHeight() > 330000) { 
                     LatestBlockTime = BlockReading.getHeader().getTimeSeconds();
                 }
             }
@@ -270,7 +271,7 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
             PastRateTargetSeconds			= TargetBlocksSpacingSeconds * PastBlocksMass;
             PastRateAdjustmentRatio			= 1.0f;
             
-            if (BlockReading.getHeight() > 317910) {
+            if (BlockReading.getHeight() > 330000) {
                 if (PastRateActualSeconds < 1) { PastRateActualSeconds = 1; }
             } else {
                 if (PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
