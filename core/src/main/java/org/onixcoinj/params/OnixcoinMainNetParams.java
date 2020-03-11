@@ -25,17 +25,12 @@ import org.bitcoinj.core.Block;
 import static org.bitcoinj.core.Coin.COIN;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.core.Utils;
-import org.bitcoinj.core.VerificationException;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptOpCodes;
-import org.bitcoinj.store.BlockStore;
-import org.bitcoinj.store.BlockStoreException;
-import org.bitcoinj.store.MemoryBlockStore;
 import org.bitcoinj.utils.Threading;
 import org.libdohj.core.AltcoinSerializer;
 import org.slf4j.Logger;
@@ -71,7 +66,7 @@ public class OnixcoinMainNetParams extends AbstractOnixcoinParams {
         // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/base58.h#L276
         p2shHeader = 5; // SCRIPT_ADDRESS
         acceptableAddressCodes = new int[]{addressHeader, p2shHeader};
-        dumpedPrivateKeyHeader = 128;  //common to all coins
+        dumpedPrivateKeyHeader = 128 + addressHeader;  //common to all coins
 
         
         genesisBlock = createGenesis(this);

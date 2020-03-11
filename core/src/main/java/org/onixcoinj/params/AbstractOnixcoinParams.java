@@ -15,7 +15,6 @@
  */
 package org.onixcoinj.params;
 
-import static com.google.common.base.Preconditions.checkState;
 import java.math.BigInteger;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.Coin;
@@ -209,6 +208,7 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
         return new AltcoinSerializer(this, parseRetain);
     }
     
+    // https://github.com/onix-project/onixcoin/blob/1393fcf238823518bc9c20e6739d8a275507590f/src/main.cpp#L1281
     @Override
     public void checkDifficultyTransitions(final StoredBlock storedPrev, final Block nextBlock,
                                            final BlockStore blockStore) throws VerificationException, BlockStoreException {
@@ -235,13 +235,13 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
             checkDifficultyTransitions(storedPrev, nextBlock);
         }
         else {
-            DarkGravityWave(storedPrev, nextBlock, blockStore);
+            DarkGravityWave3(storedPrev, nextBlock, blockStore);
         }
         
     }
     
     
-    // https://github.com/jestevez/onixcoin/blob/28aec388d7014fcc2bf1de60f2113b85d1840ddf/src/main.cpp#L1168
+    // https://github.com/onix-project/onixcoin/blob/1393fcf238823518bc9c20e6739d8a275507590f/src/main.cpp#L1266
     private void checkDifficultyTransitions(StoredBlock storedPrev, Block nextBlock) throws BlockStoreException, VerificationException {
         final long BlocksTargetSpacing	= 3 * 60;
         int TimeDaySeconds	= 60 * 60 * 24;
@@ -258,6 +258,91 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
  
     }
     
+    // https://github.com/onix-project/onixcoin/blob/1393fcf238823518bc9c20e6739d8a275507590f/src/main.cpp#L1185
+    protected void DarkGravityWave3(final StoredBlock storedPrev, final Block nextBlock,
+                                  final BlockStore blockStore) {
+        /* current difficulty formula, darkcoin - DarkGravity v3, written by Evan Duffield - evan@darkcoin.io */
+        StoredBlock BlockLastSolved = storedPrev;
+        StoredBlock BlockReading = storedPrev;
+        Block BlockCreating = nextBlock;
+        BlockCreating = BlockCreating;
+        long nActualTimespan = 0;
+        long LastBlockTime = 0;
+        long PastBlocksMin = 24;
+        long PastBlocksMax = 24;
+        long CountBlocks = 0;
+        BigInteger PastDifficultyAverage = BigInteger.ZERO;
+        BigInteger PastDifficultyAveragePrev = BigInteger.ZERO;
+
+        if (BlockLastSolved == null || BlockLastSolved.getHeight() == 0 || BlockLastSolved.getHeight() < PastBlocksMin) {
+            // This is the first block or the height is < PastBlocksMin
+            // Return minimal required work. (1e0fffff)
+            verifyDifficulty(this.getMaxTarget(), storedPrev, nextBlock);
+            return;
+        }
+
+         // loop over the past n blocks, where n == PastBlocksMax
+        for (int i = 1; BlockReading != null && BlockReading.getHeight() > 0; i++) {
+            if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
+            CountBlocks++;
+
+            if(CountBlocks <= PastBlocksMin) {
+                if (CountBlocks == 1) { PastDifficultyAverage = BlockReading.getHeader().getDifficultyTargetAsInteger(); }
+                else { PastDifficultyAverage = ((PastDifficultyAveragePrev.multiply(BigInteger.valueOf(CountBlocks)).add(BlockReading.getHeader().getDifficultyTargetAsInteger()).divide(BigInteger.valueOf(CountBlocks + 1)))); }
+                PastDifficultyAveragePrev = PastDifficultyAverage;
+            }
+
+            // If this is the second iteration (LastBlockTime was set)
+            if(LastBlockTime > 0){
+                // Calculate time difference between previous block and current block
+                long Diff = (LastBlockTime - BlockReading.getHeader().getTimeSeconds());
+                // Increment the actual timespan
+                nActualTimespan += Diff;
+            }
+            
+            // Set LasBlockTime to the block time for the block in current iteration
+            LastBlockTime = BlockReading.getHeader().getTimeSeconds();
+
+            try {
+                StoredBlock BlockReadingPrev = blockStore.get(BlockReading.getHeader().getPrevBlockHash());
+                if (BlockReadingPrev == null)
+                {
+                    //assert(BlockReading); break;
+                    return;
+                }
+                BlockReading = BlockReadingPrev;
+            }
+            catch(BlockStoreException x)
+            {
+                return;
+            }
+        }
+
+        // bnNew is the difficulty
+        BigInteger bnNew= PastDifficultyAverage;
+        
+        long nTargetTimespan = CountBlocks* ONIX_TARGET_SPACING;//nTargetSpacing;
+        // Limit the re-adjustment to 3x or 0.33x
+        // We don't want to increase/decrease diff too much.
+        if (nActualTimespan < nTargetTimespan/3)
+            nActualTimespan = nTargetTimespan/3;
+        if (nActualTimespan > nTargetTimespan*3)
+            nActualTimespan = nTargetTimespan*3;
+
+        // Calculate the new difficulty based on actual and target timespan.
+        // Retarget
+        bnNew = bnNew.multiply(BigInteger.valueOf(nActualTimespan));
+        bnNew = bnNew.divide(BigInteger.valueOf(nTargetTimespan));
+        
+        // If calculated difficulty is lower than the minimal diff, set the new difficulty to be the minimal diff.
+        if (bnNew.compareTo(proofOfWorkLimit) > 0) {
+            bnNew = proofOfWorkLimit;
+        }
+        
+        verifyDifficulty(bnNew, storedPrev, nextBlock);
+
+    }
+    
     //  @HashEngineering
     public void DarkGravityWave(StoredBlock storedPrev, Block nextBlock,
                                   final BlockStore blockStore) throws VerificationException {
@@ -269,20 +354,20 @@ public abstract class AbstractOnixcoinParams extends NetworkParameters implement
             return;
         }
 
-        if(powAllowMinimumDifficulty)
-        {
-            // recent block is more than 2 hours old
-            if (nextBlock.getTimeSeconds() > storedPrev.getHeader().getTimeSeconds() + 2 * 60 * 60) {
-                verifyDifficulty(storedPrev, nextBlock, getMaxTarget());
-                return;
-            }
-            // recent block is more than 10 minutes old
-            if (nextBlock.getTimeSeconds() > storedPrev.getHeader().getTimeSeconds() + NetworkParameters.TARGET_SPACING*4) {
-                BigInteger newTarget = storedPrev.getHeader().getDifficultyTargetAsInteger().multiply(BigInteger.valueOf(10));
-                verifyDifficulty(storedPrev, nextBlock, newTarget);
-                return;
-            }
-        }
+//        if(powAllowMinimumDifficulty)
+//        {
+//            // recent block is more than 2 hours old
+//            if (nextBlock.getTimeSeconds() > storedPrev.getHeader().getTimeSeconds() + 2 * 60 * 60) {
+//                verifyDifficulty(storedPrev, nextBlock, getMaxTarget());
+//                return;
+//            }
+//            // recent block is more than 10 minutes old
+//            if (nextBlock.getTimeSeconds() > storedPrev.getHeader().getTimeSeconds() + NetworkParameters.TARGET_SPACING*4) {
+//                BigInteger newTarget = storedPrev.getHeader().getDifficultyTargetAsInteger().multiply(BigInteger.valueOf(10));
+//                verifyDifficulty(storedPrev, nextBlock, newTarget);
+//                return;
+//            }
+//        }
         
         StoredBlock cursor = storedPrev;
         BigInteger pastTargetAverage = BigInteger.ZERO;
